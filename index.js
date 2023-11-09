@@ -11,19 +11,22 @@ main().catch((err) => {
 });
 
 async function main() {
-  const outputPath = path.join(__dirname, "output.txt");
-  await fs.appendFile(outputPath, process.argv.join("\n") + "\n", {
-    encoding: "utf8",
-  });
-
   const imageFilePath = process.argv[2];
+  const outputPath = imageFilePath.replace(/\.[^.]*$/, ".txt");
+
+  await fs.writeFile(outputPath, imageFilePath + "\n", { encoding: "utf8" });
+
   const imageBase64 = await fs.readFile(imageFilePath, { encoding: "base64" });
   const dataUrl = `data:image/png;base64,${imageBase64}`;
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-
+  const prompt = [
+    "This is a screenshot of my desktop.",
+    "Please tell me in detail what applications you have open, what web pages you are viewing in your browser, and what you infer from them so that I can look back at your work later.",
+    "Please answer in Japanese.",
+  ].join("\n");
   const result = await openai.chat.completions.create({
     model: "gpt-4-vision-preview",
     max_tokens: 500,
@@ -35,21 +38,25 @@ async function main() {
             type: "image_url",
             image_url: {
               url: dataUrl,
+              detail: "high",
             },
           },
           {
             type: "text",
-            text: "This is a screenshot of my desktop. Please describe what you see in Japanese.",
+            text: prompt,
           },
         ],
       },
     ],
   });
-  const { finish_reason, message } = result.choices[0];
-  console.log(message.content);
-  console.log(finish_reason);
+  const { message } = result.choices[0];
+  console.log(message);
 
-  await fs.appendFile(outputPath, [message.content, finish_reason].join("\n"), {
-    encoding: "utf8",
-  });
+  await fs.appendFile(
+    outputPath,
+    ["PROMPT:", prompt, "OUTPUT:", message.content].join("\n"),
+    {
+      encoding: "utf8",
+    }
+  );
 }
