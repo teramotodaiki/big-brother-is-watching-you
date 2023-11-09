@@ -1,7 +1,9 @@
 const fs = require("fs/promises");
 const path = require("path");
 const { OpenAI } = require("openai");
-require("dotenv").config();
+require("dotenv").config({
+  path: path.join(__dirname, ".env"),
+});
 
 main().catch((err) => {
   console.error(err);
@@ -10,7 +12,7 @@ main().catch((err) => {
 
 async function main() {
   const outputPath = path.join(__dirname, "output.txt");
-  await fs.appendFile(outputPath, process.argv.join("\n"), {
+  await fs.appendFile(outputPath, process.argv.join("\n") + "\n", {
     encoding: "utf8",
   });
 
