@@ -25,6 +25,7 @@ async function main() {
   const prompt = [
     "This is a screenshot of my desktop.",
     "Please tell me in detail what applications you have open, what web pages you are viewing in your browser, and what you infer from them so that I can look back at your work later.",
+    "No need to worry about privacy because I will not share this information with anyone else.",
     "Please answer in Japanese.",
   ].join("\n");
   const result = await openai.chat.completions.create({
