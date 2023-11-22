@@ -1,18 +1,40 @@
+require("dotenv/config");
 const fs = require("fs/promises");
 const path = require("path");
 const { OpenAI } = require("openai");
-require("dotenv").config({
-  path: path.join(__dirname, ".env"),
-});
+const { exec } = require("child_process");
 
-main().catch((err) => {
+const imageFilePath = (() => {
+  const input = process.argv[2];
+  if (input) {
+    return input;
+  }
+
+  const iso = new Date().toISOString();
+  const yyyymmdd = iso.replace(/-/g, "").substring(0, 6);
+  const hhmmss = iso.split("T")[1].replace(/:/g, "").substring(0, 6);
+  return path.resolve(__dirname, "out", yyyymmdd, hhmmss + ".png");
+})();
+
+main(imageFilePath).catch((err) => {
   console.error(err);
   process.exit(1);
 });
 
-async function main() {
-  const imageFilePath = process.argv[2];
+async function main(imageFilePath) {
   const outputPath = imageFilePath.replace(/\.[^.]*$/, ".txt");
+
+  // スクリーンショットを撮る
+  await fs.mkdir(path.dirname(imageFilePath), { recursive: true });
+  await new Promise((resolve, reject) => {
+    exec(`screencapture -x ${imageFilePath}`, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(void 0);
+      }
+    });
+  });
 
   await fs.writeFile(outputPath, imageFilePath + "\n", { encoding: "utf8" });
 
