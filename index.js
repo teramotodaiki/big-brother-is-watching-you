@@ -10,9 +10,9 @@ const imageFilePath = (() => {
     return input;
   }
 
-  const iso = new Date().toISOString();
-  const yyyymmdd = iso.replace(/-/g, "").substring(0, 6);
-  const hhmmss = iso.split("T")[1].replace(/:/g, "").substring(0, 6);
+  const datetime = new Date().toLocaleString("ja-JP"); // "YYYY/MM/DD HH:mm:ss"
+  const yyyymmdd = datetime.split(" ")[0].replace(/\//g, "");
+  const hhmmss = datetime.split(" ")[1].replace(/:/g, "");
   return path.resolve(__dirname, "out", yyyymmdd, hhmmss + ".png");
 })();
 
